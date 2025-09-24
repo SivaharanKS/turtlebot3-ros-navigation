@@ -1,0 +1,12 @@
+# catkin
+build/
+devel/
+install/
+logs/
+.catkin_workspace
+
+# OS / editors
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
