@@ -1,0 +1,5 @@
+<launch>
+<param name = "freq" type = "double" value = "2.0"/>
+<node name = "controleur" pkg = "tb3_projet" type = "controleur" output = "screen" />
+</launch>
+
