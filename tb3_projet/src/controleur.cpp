@@ -6,10 +6,8 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <string>
-
-#include "ros/ros.h"
 #include "std_msgs/Int8.h"
-#include "termios.h"
+
 // a completer
 
 #define FREQUENCY 1
@@ -28,6 +26,9 @@ void sigintHandler(int sig);
 // Les variables globales
 Publisher pub_msg;
 Publisher pub_avancer;
+
+Subscriber sub_key;
+
 String msg;
 double linear_speed = LINEAR_SPEED;
 double angular_speed = ANGULAR_SPEED;
@@ -37,24 +38,30 @@ double freq;
 int mode = 0;
 bool Auto = true;
 
-int getch();
-std_msgs::Int8 keyboard_input;
-Publisher KeyInput_Pub;
+int num_key;
+
+
 
 
 // L'impl des fonctions
 void arreter() {
-  pub_avancer.publish(ROBOT);
   ROBOT.linear.x = 0.0;
   ROBOT.linear.y = 0.0;
   ROBOT.linear.z = 0.0;
+  ROBOT.angular.x = 0.0;
+  ROBOT.angular.y = 0.0;
+  ROBOT.angular.z = 0.0;
+  pub_avancer.publish(ROBOT);
 }
 
 void avancer(double v) {
-  pub_avancer.publish(ROBOT);
   ROBOT.linear.x = v;
   ROBOT.linear.y = 0.0;
   ROBOT.linear.z = 0.0;
+  ROBOT.angular.x = 0.0;
+  ROBOT.angular.y = 0.0;
+  ROBOT.angular.z = 0.0;
+  pub_avancer.publish(ROBOT);
 }
 
 void send_msg(String msg) {
@@ -64,13 +71,16 @@ void send_msg(String msg) {
 }
 
 void reculer(double v) {
-  pub_avancer.publish(ROBOT);
   ROBOT.linear.x = -v;
   ROBOT.linear.y = 0.0;
   ROBOT.linear.z = 0.0;
+  ROBOT.angular.x = 0.0;
+  ROBOT.angular.y = 0.0;
+  ROBOT.angular.z = 0.0;
+  pub_avancer.publish(ROBOT);
 }
 
-void move() {
+void move(int mode) {
   ROS_INFO("move");
   
   switch (mode){
@@ -90,87 +100,106 @@ void move() {
 }
 
 
-void tourner_d() {
-  pub_avancer.publish(ROBOT);
+void tourner_d(double a) {
+  ROBOT.linear.x = 0.0;
+  ROBOT.linear.y = 0.0;
+  ROBOT.linear.z = 0.0;
   ROBOT.angular.x = 0.0;
   ROBOT.angular.y = 0.0;
-  ROBOT.angular.z = 10.0;
+  ROBOT.angular.z = -a;
+  pub_avancer.publish(ROBOT);
 }
 
 
-void tourner_g() {
-  pub_avancer.publish(ROBOT);
+void tourner_g(double a) {
+  ROBOT.linear.x = 0.0;
+  ROBOT.linear.y = 0.0;
+  ROBOT.linear.z = 0.0;
   ROBOT.angular.x = 0.0;
   ROBOT.angular.y = 0.0;
-  ROBOT.angular.z = -10.0;
+  ROBOT.angular.z = a;
+  pub_avancer.publish(ROBOT);
+} 
+
+
+
+void keyboardCallback(Int8 keyboard_input){
+  ROS_INFO("Keyboard listener : I heard : [%d]", keyboard_input.data);
+  num_key = keyboard_input.data;
 }
+
+
+
 
 int main(int argc, char **argv) {
 
   signal(SIGINT, sigintHandler);
   ros::init(argc, argv, "controleur", ros::init_options::NoSigintHandler);
+  ros::init(argc, argv, "keyboard", ros::init_options::NoSigintHandler);
 
   NodeHandle nh;
   nh.getParam("freq", freq);
 
   //Publishers
   pub_msg = nh.advertise<String>("/log", 2); // Le publisher
-  pub_avancer =
-      nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); // Le publisher
+  pub_avancer = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); // Le publisher
       
-
-  KeyInput_Pub = nh.advertise<std_msgs::Int8>("/keyboard_input", 1000);
+  //Subscribers
+  sub_key = nh.subscribe("/keyboard_input", 1000, keyboardCallback);
 
   Rate loop_rate(frequence);
 
   while (ok()) {
-    keyboard_input.data = getch();
-    KeyInput_Pub.publish(keyboard_input);
-    ROS_INFO("keyb = %d", keyboard_input.data);
-    ros::spinOnce();
-    loop_rate.sleep();
-
-    if (keyboard_input.data == 97){
-      Auto = !Auto;
-      
-      ROS_INFO("Auto = %d/n", Auto);
-      
-    }
 
 
-    if (Auto){
-          ROS_INFO("J'AI UNE CONSCIENCE");
-      
-          move();
-          mode++;
-    
-          if (mode > 2){
-            mode = 0;
+          
+          if (num_key == 97){
+            Auto = !Auto;
+            
+            ROS_INFO("Auto = %d", Auto);
+            
           }
-    
-    } 
       
-    else {
-        ROS_INFO("APPUYEZ SUR ZQSD");
-        switch (keyboard_input.data){
-  
-          case(122) : 
-          avancer(0.5); 
-          break;
-          case(115) :
-          reculer(0.5); 
-          break;
-          case(113) :
-          tourner_g(); 
-          break;
-          case(100) :
-          tourner_d(); 
-          break;
-
-        }
-
-    
-    }
+      
+          if (Auto){
+                ROS_INFO("J'AI UNE CONSCIENCE");
+                ROS_INFO("Mode : %d", mode);
+                
+                move(mode);
+                mode++;
+          
+                if (mode > 2){
+                  mode = 0;
+                }
+          
+          } 
+            
+          else {
+              ROS_INFO("APPUYEZ SUR ZQSD");
+              switch (num_key){
+        
+                case(122) : 
+                avancer(0.5); 
+                ROS_INFO("J'AVANCE");
+                break;
+                case(115) :
+                reculer(0.5); 
+                ROS_INFO("JE RECULE");
+                break;
+                case(113) :
+                tourner_g(1); 
+                ROS_INFO("JE TOURNE A GAUCHE");
+                break;
+                case(100) :
+                tourner_d(1); 
+                ROS_INFO("JE TOURNE A DROITE");
+                break;
+      
+              }
+              
+        num_key = 32; //Valeur arbitraire pour ne pas garder la même valeur pour num_key (mettre une valeur inutilisée)
+              
+      }
 
     spinOnce();
     loop_rate.sleep();
@@ -186,18 +215,6 @@ int main(int argc, char **argv) {
  * @param sig - catched signal.
  *
  */
-int getch() {
-  static struct termios oldt, newt;
-  tcgetattr(STDIN_FILENO, &oldt); // save old settings
-  newt = oldt;
-  newt.c_lflag &= ~(ICANON);               // disable buffering
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt); // apply new settings
-
-  int c = getchar(); // read character (non-blocking)
-
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // restore old settings
-  return c;
-}  
 
 void sigintHandler(int sig) {
   // Log quit

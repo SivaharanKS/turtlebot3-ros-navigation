@@ -226,3 +226,8 @@ include_directories(
 add_executable(controleur src/controleur.cpp)
 add_dependencies(controleur ${catkin_EXPORTED_TARGETS})
 target_link_libraries(controleur ${catkin_LIBRARIES})
+
+#EXECUTABLE_KEYBOARD
+add_executable(keyboard src/key_input_node.cpp)
+add_dependencies(keyboard ${catkin_EXPORTED_TARGETS})
+target_link_libraries(keyboard ${catkin_LIBRARIES})
