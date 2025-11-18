@@ -1,6 +1,6 @@
 <launch>
-<param name = "freq" type = "double" value = "2.0"/>
-<node name = "controleur" pkg = "tb3_projet" type = "controleur" output = "screen" />
-<node name = "keyboard" pkg = "tb3_projet" type = "keyboard" output = "screen" />
+    <param name = "freq" type = "double" value = "2.0"/>
+    <node name = "controleur" pkg = "tb3_projet" type = "controleur" output = "screen" />
+    <node name = "keyboard" pkg = "tb3_projet" type = "keyboard" output = "screen" />
+    <node name = "detector" pkg = "tb3_projet" type = "detector" output = "screen" />
 </launch>
-

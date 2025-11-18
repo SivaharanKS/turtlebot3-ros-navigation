@@ -9,7 +9,7 @@ project(tb3_projet)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
-  actionlib_msgs
+  actionlib
   geometry_msgs
   message_generation
   nav_msgs
@@ -79,7 +79,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   actionlib_msgs#   geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
+#   geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -114,7 +114,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tb3_projet
-#  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation nav_msgs roscpp rospy sensor_msgs std_msgs tf tf2 tf2_ros
+#  CATKIN_DEPENDS actionlib actionlib geometry_msgs message_generation msg nav_msgs roscpp rospy sensor_msgs std_msgs tf tf2 tf2_ros
 #  DEPENDS system_lib
 )
 
@@ -128,13 +128,6 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-
-
-
-
-
-
-
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -221,7 +214,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-
 #EXECUTABLE_CONTROLEUR
 add_executable(controleur src/controleur.cpp)
 add_dependencies(controleur ${catkin_EXPORTED_TARGETS})
@@ -231,3 +223,5 @@ target_link_libraries(controleur ${catkin_LIBRARIES})
 add_executable(keyboard src/key_input_node.cpp)
 add_dependencies(keyboard ${catkin_EXPORTED_TARGETS})
 target_link_libraries(keyboard ${catkin_LIBRARIES})
+add_executable(detector src/detector.cpp)
+target_link_libraries(detector ${catkin_LIBRARIES})
